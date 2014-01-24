@@ -1,0 +1,10 @@
+[
+  {
+    "caption": "Redmine: List issues",
+    "command": "list_redmine_issues"
+  },
+  {
+    "caption": "Redmine: Update status",
+    "command": "update_redmine_issues"
+  }
+]

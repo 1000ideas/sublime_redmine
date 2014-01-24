@@ -1,0 +1,10 @@
+{
+  // Redmine host
+  "host": false,
+
+  //Redmine API key:
+  "apikey" : false,
+
+  //Browser command string, eg. "chromium %s", or false for default browser
+  "browser": false
+}
