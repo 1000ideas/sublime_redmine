@@ -4,8 +4,9 @@ Sublime Text 2 plugin for [redmine](http://www.redmine.org "Redmine's Homepage")
 
 ## Features
 
-* Open issue in browser
-* Change issue status
+* Open issue in browser.
+* Change issue status (for open or closed issues).
+* Start/stop time tracking for issue (needs [table_it](https://github.com/1000ideas/table_it) plugin).
 
 ## Contributing to sublime-redmine
  

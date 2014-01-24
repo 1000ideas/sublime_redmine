@@ -5,6 +5,20 @@
   },
   {
     "caption": "Redmine: Update status",
-    "command": "update_redmine_issues"
+    "command": "update_redmine_issues",
+    "args": {"issue_filter": {"status_id": "open"}}
+  },
+  {
+    "caption": "Redmine: Update status - closed issues",
+    "command": "update_redmine_issues",
+    "args": {"issue_filter": {"status_id": "closed"}}
+  },
+  {
+    "caption": "Redmine: Begin tracking issue time",
+    "command": "start_redmine_issues"
+  },
+  {
+    "caption": "Redmine: Stop tracking issue time",
+    "command": "stop_redmine_issues"
   }
 ]

@@ -49,7 +49,7 @@ class RedmineAPIThread(threading.Thread):
         _data = None
       else:
         url = "%s/%s.json" % (self.host, self.path)
-        _data = json.dumps(self.data)
+        _data = json.dumps(self.data) #if self.data != None else None
       print "[%s] %s" %(self.method, url)
       req = urllib2.Request(url, _data, headers= h)
       req.get_method = lambda: self.method
@@ -105,8 +105,9 @@ class ListRedmineStatusesCommand(RedmineCommand):
 
 
 class ListRedmineIssuesCommand(RedmineCommand):
-  def run(self):
-    self.api_call('issues', {'sort': 'id:desc'})
+  def run(self, issue_filter = {}):
+    issue_filter.update({'sort': 'id:desc'})
+    self.api_call('issues', issue_filter)
 
   def generic_callback(self, output):
     jout = json.loads(output)
@@ -136,9 +137,7 @@ class UpdateRedmineStatusCommand(ListRedmineStatusesCommand):
 
 
   def status_selected(self, idx):
-    # ListRedmineStatusesCommand.status_selected(self, idx)
     if idx >= 0 and self.issue_id != None:
-
       self.status = self.statuses[idx]
 
       self.api_call(
@@ -156,3 +155,56 @@ class UpdateRedmineIssuesCommand(ListRedmineIssuesCommand):
     if idx >= 0:
       issue_id = self.issues[idx]['id']
       self.window.run_command('update_redmine_status', {'issue_id': issue_id})
+
+
+class StartRedmineIssuesCommand(ListRedmineIssuesCommand):
+  def generic_callback(self, output):
+    jout = json.loads(output)
+    self.issues = filter(lambda i: not i.get('play', False), jout['issues'])
+    if len(self.issues) > 0:
+      self.quick_panel(["#%d: [%s] %s" % (i["id"], i["project"]["name"], i["subject"]) for i in self.issues], self.select_issue)
+    else:
+      sublime.status_message("No issues to start!")
+
+  def select_issue(self, idx):
+    if idx >= 0:
+      self.issue_id = self.issues[idx]['id']
+      self.api_call(
+        'issues/%s/start_time' % self.issue_id,
+        None,
+        'POST',
+        self.started_response
+      )
+
+  def started_response(self, output):
+    jout = json.loads(output)
+    if jout.get('success', False):
+      sublime.status_message("Time tracking for #%s started." % (self.issue_id) )
+    else:
+      sublime.error_message("[Redmine] Error occured!")
+
+class StopRedmineIssuesCommand(ListRedmineIssuesCommand):
+  def generic_callback(self, output):
+    jout = json.loads(output)
+    self.issues = filter(lambda i: i.get('play', False), jout['issues'])
+    if len(self.issues) > 0:
+      self.quick_panel(["#%d: [%s] %s" % (i["id"], i["project"]["name"], i["subject"]) for i in self.issues], self.select_issue)
+    else:
+      sublime.status_message("No started issues!")
+
+  def select_issue(self, idx):
+    if idx >= 0:
+      self.issue_id = self.issues[idx]['id']
+      self.api_call(
+        'issues/%s/stop_time' % self.issue_id,
+        None,
+        'POST',
+        self.stoped_response
+      )
+
+  def stoped_response(self, output):
+    jout = json.loads(output)
+    if jout.get('success', False):
+      sublime.status_message("Time tracking for #%s stoped. Time spend: %.2fh." % (self.issue_id, jout.get('time', 0.0)))
+    else:
+      sublime.error_message("[Redmine] Error occured!")
